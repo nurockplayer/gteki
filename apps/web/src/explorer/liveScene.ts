@@ -37,6 +37,7 @@ export interface LiveSceneOptions {
   tier: "high" | "low";
   /** A baked stairwell recipe for this tier; null means the live cut. */
   recipe: CutRecipe | null;
+  replayCompatibleMeshes?: boolean;
   /**
    * The station's env map for its generated meshes (`StationScene.generatedMeshEnvMap`): supplied only by a
    * station lit through baked maps and env maps alone, so the connector shell and stairwell rail take it (#1008).
@@ -73,7 +74,7 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
     walkable: new Set(originalTargets.ground), tier, greyboxRoot: greybox.root,
     // Collision proxies may sit outside the station root: cut them with the visible slabs.
     collision: [...walkable, ...colliders, ...cameraBlockers],
-    recipe, envMap: options.envMap ?? null,
+    recipe, replayCompatibleMeshes: options.replayCompatibleMeshes, envMap: options.envMap ?? null,
   });
   const cutMs = elapsed();
   // Instances pulled out of an InstancedMesh by either cut stand in for their owner in every target list.

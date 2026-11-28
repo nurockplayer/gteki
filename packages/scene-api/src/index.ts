@@ -163,6 +163,8 @@ export interface StationScene {
 export interface SceneContext {
   THREE: typeof THREE;
   bundle: StationBundle;
+  /** Bundle before preview routes were composed, for scenes with a separately baked base layout. */
+  baseBundle?: StationBundle;
   /** Host's ?next=1 preview; absent keeps the shipping scene. */
   previewNext?: boolean;
   /** Register the collision targets of a chunk attached after the station has loaded. */

@@ -48,6 +48,8 @@ export interface RecipeHooks {
   keys: readonly object[];
   record?: MeshRecord[];
   replay?: readonly MeshRecord[];
+  /** The preview keeps the base mesh order but replaces some geometry and adds meshes. */
+  replayCompatibleMeshes?: boolean;
 }
 
 /** FNV-1a 32-bit over bytes, continuing from `seed`. */

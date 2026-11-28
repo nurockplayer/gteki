@@ -86,20 +86,24 @@ export function depatoPreviewBundle(bundle: StationBundle): StationBundle {
       ...current, nodes: [...current.nodes, ...approach], edges: [...current.edges, ...edges],
     }, layouts[index]!);
     const door = withInterior.nodes.find(n => n.id === `depato-${row.id}-1F-door0`)!;
-    return { ...withInterior, pois: withInterior.pois.map(p => p.id === row.poiId
+    const streetEdgeCount = current.edges.length + edges.length;
+    return { ...withInterior, edges: withInterior.edges.map((edge, i) => i < streetEdgeCount ? edge : {
+      ...edge, attributes: { ...edge.attributes, deferredScene: true },
+    }), pois: withInterior.pois.map(p => p.id === row.poiId
       ? { ...p, floorId: door.floorId, displayPosition: { ...door.position, z: row.entrance.elevation + 1.3 },
         connectorNodeIds: [door.id] } : p) };
   }, bundle);
 }
 
-export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene): Promise<StationScene> {
+export function attachDepatoPreview(ctx: SceneContext, scene: StationScene): StationScene {
   const { THREE } = ctx;
   const resources: PortalCutResources = {
     geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [],
   };
   const pavementMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, visible: false });
   const facadeCuts = new Map<Object3D, CutRegion[]>();
-  const pavement = rollout.stores.map(row => {
+  const facades = rollout.stores.map(row => scene.root.getObjectByName(`department-store:${row.buildingId}`)!);
+  const pavement = rollout.stores.map((row, i) => {
     const exit = ctx.bundle.nodes.find(n => n.id === row.streetApproach.exitNode)!;
     const start = new THREE.Vector3(exit.position.x, exit.renderZ ?? exit.position.z!, -exit.position.y);
     const points = [start, ...row.streetApproach.waypoints.map(([x, y, z]) => new THREE.Vector3(x, y, z))];
@@ -123,8 +127,7 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     const mesh = new THREE.Mesh(geometry, pavementMaterial);
     mesh.name = `depato-${row.id}-street-support`;
     mesh.userData.gteki_role = "walkable";
-
-    const building = scene.root.getObjectByName(`department-store:${row.buildingId}`)!;
+    const building = facades[i]!;
     const [x, z] = row.entrance.point, [nx, nz] = row.entrance.inward;
     const y = row.entrance.elevation;
     const across = (p: Vector3) => (p.x - x!) * -nz! + (p.z - z!) * nx!;
@@ -154,20 +157,39 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     return mesh;
   });
   for (const [building, regions] of facadeCuts) cutRegions(building, regions, resources);
-  await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(p => [
-    p.input.store.name.ja, p.input.store.name.en,
-    ...p.floors.flatMap(f => [f.label.ja, f.label.en, ...f.tenants.flatMap(t => [t.ja, t.en])]),
-  ]).join(""));
-  const interiors = layouts.map(p => buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
-  const fullStoreFacades = rollout.stores.map(row => fullStores.has(row.id)
-    ? scene.root.getObjectByName(`department-store:${row.buildingId}`)! : null);
-  scene.root.add(...pavement, ...interiors.flatMap(i => [i.root, i.connectorRoot]));
+  scene.root.add(...pavement);
+
+  const interiors = new Map<number, ReturnType<typeof buildDepatoInterior>>();
+  const pending = new Set(layouts.keys());
   let avatar: { x: number; y: number; z: number } | null = null;
+  let disposed = false;
+  async function mount(i: number) {
+    const layout = layouts[i]!;
+    await document.fonts.load('600 32px "GTEki Sign JP"', [
+      layout.input.store.name.ja, layout.input.store.name.en,
+      ...layout.floors.flatMap(f => [f.label.ja, f.label.en, ...f.tenants.flatMap(t => [t.ja, t.en])]),
+    ].join(""));
+    if (disposed) return;
+    const interior = buildDepatoInterior(ctx, layout, scene.generatedMeshEnvMap);
+    interior.setAvatar(avatar);
+    interiors.set(i, interior);
+    scene.root.add(interior.root, interior.connectorRoot);
+    interior.root.updateWorldMatrix(true, true);
+    interior.connectorRoot.updateWorldMatrix(true, true);
+    ctx.mountChunk?.(interior);
+  }
   return {
     ...scene,
-    walkable: [...scene.walkable, ...pavement, ...interiors.flatMap(i => i.walkable)],
-    colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i => i.colliders)],
-    cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(i => i.cameraBlockers)],
+    walkable: [...scene.walkable, ...pavement],
+    approach(position) {
+      scene.approach?.(position);
+      for (const i of pending) {
+        const { point: [x, z], elevation } = rollout.stores[i]!.entrance;
+        if (stableHypot(position.x - x!, position.y - elevation, position.z - z!) > 32) continue;
+        pending.delete(i);
+        void mount(i);
+      }
+    },
     setCameraFocus(...args) {
       scene.setCameraFocus?.(...args);
       avatar = args[3] ?? null;
@@ -175,10 +197,11 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     },
     update(dt, elapsed, camera) {
       scene.update?.(dt, elapsed, camera);
-      if (!camera) return;
+      if (!camera || !interiors.size) return;
       const p = avatar ?? camera.position;
       const distances = layouts.map((l, n) => {
-        const facade = fullStoreFacades[n];
+        if (!interiors.has(n)) return Infinity;
+        const facade = fullStores.has(l.input.store.id) ? facades[n] : null;
         const top = facade ? l.floors.at(-1)!.level : "1F";
         const inside = l.contains([p.x, p.z]) && p.y >= l.height("B1") - 1 && p.y <= l.height(top) + 4;
         // Some LOD2 roof/setback faces cross the illustrative upper-floor plates.
@@ -188,11 +211,13 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
       const active = distances.indexOf(Math.min(...distances));
       // Keep the detail loaded for the approach and release it after leaving the storefront.
       interiors.forEach((i, n) => { if (n !== active || distances[n]! > 24) i.update(camera, dt, elapsed, false); });
-      if (distances[active]! <= 24) interiors[active]!.update(camera, dt, elapsed);
+      if (distances[active]! <= 24) interiors.get(active)!.update(camera, dt, elapsed);
     },
     dispose() {
+      disposed = true;
       disposePortalCuts(resources);
       interiors.forEach(i => i.dispose());
+      pavement.forEach(mesh => mesh.geometry.dispose());
       pavementMaterial.dispose();
       scene.dispose();
     },

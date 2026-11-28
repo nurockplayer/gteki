@@ -692,10 +692,11 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 // ---------------------------------------------------------------- main
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   // `let`, not `const`: both are cleared before returning (see the end of this function).
-  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, layoutBakeText: opts.layoutBakeText, verifyGeneratedInput: opts.verifyRestrictedInput, pitchedCeilings: opts.pitchedCeilings });
+  let { layout, protection, cached } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, layoutBakeText: opts.layoutBakeText, verifyGeneratedInput: opts.verifyRestrictedInput, pitchedCeilings: opts.pitchedCeilings });
   // Build callbacks share this scope; release the large fetch text before retaining any of them.
   opts = { ...opts, layoutBakeText: undefined };
   markScene("build-layout");
+  markScene(cached ? "layout-reused" : "layout-rebuilt");
   const preview = layout.shaftCeilingPreview;
   const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
