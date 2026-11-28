@@ -260,7 +260,7 @@ export const buildScene: BuildScene = (ctx) => {
     const scene = assembleScene(ctx, kit ?? undefined, shopKit ?? undefined, { layoutBakeText });
     if (!registry) return scene;
     const { attachDepatoPreview } = await import("../scene/depato.ts");
-    return registry.attachRailScene(ctx, await attachDepatoPreview(ctx, scene));
+    return registry.attachRailScene(ctx, attachDepatoPreview(ctx, scene));
   });
 };
 
