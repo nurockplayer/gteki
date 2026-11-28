@@ -12,6 +12,7 @@ Owner: gteki-visual (art director, Opus 5.5, confirmed by the Owner after auditi
 - Hero target frames H1–H4 accepted (D8).
 - Preset B v4 is the default escalator light (D9, #1184).
 - Release steering (token-rules 26): `docs/release/journey.md`; my rows are J10 and the flip acceptances of `?next=1` work, judged live on gteki.pages.dev/?next=1.
+- Hero-shot program: three shots S1–S3 and their gap lists (D16).
 
 ## Visual thesis
 
@@ -352,6 +353,50 @@ The exception covers only this. D3's truth rule still holds: nothing on the slic
 Rejected: B (only surveyed real shops on the exact route) adds nothing on current evidence. Unlabelled fictional shops are rejected because they would read as station facts. C (a shopping-street route) goes to the next slice; it doesn't replace the two stops here.
 
 Provisional until the Owner sees the shops in a walk video.
+
+### D16 (2026-11-28 19:2x JST) Hero-shot program: three shots, the S3 target, gap lists
+**Owner ruling, 2026-11-28 JST** (lead-decision on #1244; board `hero-shots-1128`): the game must grab the eye at a glance. The art director picks three hero shots, gives each one paint-over target and a ranked gap list against main, breakage first; Codex implements in that order and the art director accepts whole frames. In-game stays real-time; a Cycles path-traced still of the same scene is made for marketing.
+
+**Judged on** whole real-GPU frames of main 03dff211 (ANGLE Metal, Apple M2 Pro, 2026-11-28 18:56–18:58 JST; `/Volumes/KIOXIA/scratch/gteki-hero1128/main-03dff211/`, 40 frames at eight moments of the exit 1 → Oedo platform walk, desktop and phone, default and `?next=1`): both contact sheets, then the clean 1600×1000 bases of the first frame, the B1 corridor, the long escalator, the escalator foot and the arrival, and the phone first frame, at native size beside H1, H3 and H4.
+
+**The three shots:**
+
+| Shot | Moment | Target |
+|---|---|---|
+| S1 first frame | the cold open at the exit 1 mouth (route d = 0 m; default and `?next=1` share the camera) | H1, `targets/h1-exit1-mouth.jpg` |
+| S2 long escalator | the H3 pose (route d = 170 m) | H3, `targets/h3-escalator-run.jpg` |
+| S3 platform arrival | the frame the guided walk ends on (route d = 204 m, B6) | new: `targets/s3-platform-arrival.jpg` |
+
+Not picked: the B1 corridor is the best frame on main today and needs the least; the escalator foot (H4) is covered by S2's and S3's items; slice-12 shows only floor (its heading is wrong). H2 and H4 stay as targets for their views.
+
+**Overall read.** Main looks like a lit greybox. The cameras are mostly right. What is missing is material and light, and S1 and S3 each put a blank slab in the middle of the frame. The first frame is the weakest of the three.
+
+![S1 on main 03dff211](live/2026-11-28-s1-first-frame-main.jpg)
+![S2 on main 03dff211](live/2026-11-28-s2-escalator-main.jpg)
+![S3 on main 03dff211](live/2026-11-28-s3-arrival-main.jpg)
+
+**S3 target: variant b** (`po3-s3-b`, base | a | b in `targets/s3-variants-base-a-b.jpg`).
+
+![S3 target](targets/s3-platform-arrival.jpg)
+
+- Why b: the name sign is the brightest thing in frame and keeps its wording; the centre block sits on the floor on a dark jointed plinth; the troffers leave pools and a soft, broken reflection on a stone floor that is not a mirror; the screen doors are stainless with glazed leaves; four waiting passengers at different doors give scale. Variant a lost the sign face (blurred to a block) and has nothing behind the doors.
+- What the game does **not** copy from it: the camera (the walk still ends square on the slab; the end pose is re-aimed so one door row recedes and the sign sits in the upper third), the exact door and seam positions (the tool moved some beyond a few pixels), and the regenerated letterforms (the game's own sign stands). The floor may be one step lighter than the paint-over; H4's cool landing is the reference for its value.
+- **D3, narrow call:** a stopped train behind the screen doors is allowed as dressing: a dark body with a lit window band, no livery, no text, no line colour, no destination. It states no station fact. A moving or boardable train is a feature, not dressing, and is not covered.
+
+**Gap lists against main** (breakage first; full text on the board and in #1244 comment 7237635642):
+
+- **S1 vs H1.** Breakage: the exit railings are a lattice of unshaded white square posts about 0.15 m thick that crosses the whole frame and the cat (a third of the phone frame); a blown-out white rectangle on the floor at the stair top; the centre of the frame is a blank grey slab with no light strips, no sign and no visible flight down; a pale blue wash over the whole street (against D5). Look: no warm street / cool stairs split; milky canopy glass; no joints or contact shadows; no pedestrians; the cat reads as a flat cut-out.
+- **S2 vs H3.** Breakage: the neighbouring run is a smear of stretched step texture and blur; handrails and balustrade tops are white glowing streaks (neon-like at the foot); both balustrades are solid grey wedges over about 45% of the frame and the right lower wall is a dark void. Look: no panel joints or gradient down the shaft; weak landing glow; no skirt lights, glass or riders. Keep the camera, the pitched ceiling, the troffers and the band.
+- **S3 vs the new target.** Breakage: the centre block hovers and is the subject of the frame; the screen doors are flat boxes; thin beige strips hang down the side walls like ropes; full-height saturated pink pillars (magenta is a band, not a block); the arrival ring is several metres wide. Look: the end pose; a floor without pools or reflection; walls without joints; no passengers.
+
+**Order of work** (one problem per brief; each comes back as whole frames of its shot, desktop and phone, from the same cameras):
+- A. Breakage: A1 escalator handrails and balustrades; A2 exit 1 railings and the white rectangle; A3 the left-run smear; A4 platform block, screen doors, pillars, wall strips; A5 the street wash.
+- B. Composition: B1 the first frame (end-wall light strips, exit sign, readable flight, cat clear of every post); B2 the arrival end pose.
+- C. Light, the largest lever: C1 whole-scene baked GI and AO (Blender lightmap), piloted on the long escalator shaft and the B6 platform; C2 a grade per level with the landing glow (warm street, 4000 K shafts, cool 5500 K platform; no global or depth fog underground, D5 and D7 stand; a distance tint on the street only, as a test arm); C3 floor reflections on B6 and B1 only (roughness about 0.35, never a mirror).
+- D. Surface: D1 trim sheet and decals (joints, baseboard, shadow line, grout, skirt lights); D2 humans in the three frames (the crowd stays human, Owner 2026-11-28; station cats are #627); D3 cat rim light and shading, last, because the cat is 14–20% of the frame and seen from behind.
+- E. A Cycles key-art still from S2 once A and C1 have landed, so marketing and game show the same scene.
+
+Provisional until the Owner sees the three frames.
 
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 
