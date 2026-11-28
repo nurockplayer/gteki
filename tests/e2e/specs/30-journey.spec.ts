@@ -5,6 +5,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { ARTIFACTS, hooks, imageStats, routeWaypoints, stationData, PROBE_SCRIPT } from "../lib/gteki.ts";
 import { screenshotFlatRatio } from "../lib/screenshot-flat.ts";
 import type { StationScene } from "../../../packages/scene-api/src/index.ts";
+import type { Explorer } from "../../../apps/web/src/explorer/explorer.ts";
+import type { Intersection } from "three";
+
+type SceneQuery = ReturnType<Explorer["sceneQuery"]>;
 
 const reelMode = process.env.JOURNEY_MODE === "next" ? "next" : "default";
 const maxJ5GapM = 2.5;
@@ -157,12 +161,19 @@ test("cold open @phone", async ({ page, browserName }, info) => {
 
 async function sceneMetrics(page: Page) {
   return page.evaluate(() => {
-    const { explorer: e, castAll, prepareRayTrees } = (window as any).__gteki.scanProbe();
-    const scene: any[] = ((window as any).__journeyMeshes ??= (() => {
-      const meshes: any[] = []; e.scene.traverse((o: any) => { if (o.isMesh) meshes.push(o); });
-      prepareRayTrees(meshes.filter((m: any) => (m.geometry?.index?.count ?? m.geometry?.attributes?.position?.count ?? 0) > 3000));
-      return meshes;
-    })());
+    const { explorer: e, castAll, prepareRayTrees, sceneQuery } = (window as any).__gteki.scanProbe();
+    const query = (sceneQuery as SceneQuery | undefined)?.query;
+    const seen: WeakSet<object> = (window as any).__journeyRayTrees ??= new WeakSet();
+    const scene: any[] = [], newDenseMeshes: any[] = [];
+    e.scene.traverse((o: any) => {
+      if (!o.isMesh) return;
+      scene.push(o);
+      if (!seen.has(o.geometry) && (o.geometry.index?.count ?? o.geometry.attributes.position?.count ?? 0) > 3000) {
+        seen.add(o.geometry);
+        newDenseMeshes.push(o);
+      }
+    });
+    if (newDenseMeshes.length) prepareRayTrees(newDenseMeshes);
     const under = (o: any, root: any) => { for (let p = o; p; p = p.parent) if (p === root) return true; return false; };
     const visible = (o: any) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
     const meshes = scene.filter((o: any) => visible(o) && !under(o, e.avatar));
@@ -184,6 +195,7 @@ async function sceneMetrics(page: Page) {
       if (box) box.union(b); else box = b;
     });
     let good = 0; const hidden: Record<string, number> = { geometry: 0, npc: 0, ui: 0, offscreen: 0 }; const catMeshes: Record<string, number> = {}, nearMeshNames: Record<string, number> = {};
+    const catHits: Intersection[] = [];
     if (box) {
       const center = box.getCenter(e.pos.clone());
       const points = [center];
@@ -196,27 +208,36 @@ async function sceneMetrics(page: Page) {
         e.ray.ray.set(camera.position, direction.normalize()); e.ray.near = 0; e.ray.far = distance;
         const hit = hits()[0];
         if (!hit || hit.distance >= distance) good++;
-        else { let npc = false; for (let o = hit.object; o; o = o.parent) if (o.userData?.gteki_role === "ambient_crowd" || /crowd/i.test(o.name)) npc = true; hidden[npc ? "npc" : "geometry"]++; if (!npc) tally(catMeshes, hit.object); }
+        else { catHits.push(hit); let npc = false; for (let o = hit.object; o; o = o.parent) if (o.userData?.gteki_role === "ambient_crowd" || /crowd/i.test(o.name)) npc = true; hidden[npc ? "npc" : "geometry"]++; if (!npc) tally(catMeshes, hit.object); }
       }
     } else hidden.offscreen = 9;
-    // A mesh whose world bounding sphere is farther than 0.3 m cannot contribute to nearClip.
-    // Keep dynamic meshes in the ray set: their geometry bounds need not contain their posed instances.
-    const nearMeshes = meshes.filter((o: any) => {
-      if (o.isInstancedMesh || o.isSkinnedMesh || !o.geometry) return true;
-      if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
-      const sphere = o.geometry.boundingSphere?.clone().applyMatrix4(o.matrixWorld);
-      return !sphere || sphere.distanceToPoint(camera.position) <= 0.3;
-    });
-    let near = 0;
-    for (let y = 0; y < 10; y++) for (let x = 0; x < 16; x++) {
-      e.ray.setFromCamera({ x: (x + 0.5) / 8 - 1, y: 1 - (y + 0.5) / 5 }, camera);
-      e.ray.near = 0; e.ray.far = 0.3;
-      const nearHit = hits(nearMeshes)[0];
-      if (nearHit) { near++; tally(nearMeshNames, nearHit.object); }
-    }
+    const clip = query?.nearClip();
+    for (const hit of clip?.hits ?? []) tally(nearMeshNames, hit.object);
+    const describe = (hits: Intersection[]) => query
+      ? [...new Map(hits.map(hit => [`${hit.object.id}:${hit.instanceId ?? ""}`, hit])).values()].map(hit => query.describe(hit))
+      : [];
     const occluder = Object.entries(hidden).sort((a, b) => b[1] - a[1])[0];
-    return { catVisible: good / 9, catOccluder: good === 9 ? null : occluder[0], catOccluderMeshes: catMeshes, nearClip: near / 160, nearClipMeshes: nearMeshNames, cameraDirection: camera.getWorldDirection(e.pos.clone()).toArray() };
+    return { catVisible: good / 9, catOccluder: good === 9 ? null : occluder[0], catOccluderMeshes: catMeshes, nearClip: clip?.ratio ?? 0, nearClipMeshes: nearMeshNames, nearClipHits: describe(clip?.hits ?? []), catHits: describe(catHits), cameraDirection: camera.getWorldDirection(e.pos.clone()).toArray() };
   });
+}
+
+async function sceneDiagnostic(page: Page, metrics: Awaited<ReturnType<typeof sceneMetrics>>, sample: { voidRatio: number; nearBlack: number }) {
+  const query = await page.evaluate(sample => {
+    const api = (window as any).__gteki.sceneQuery as SceneQuery;
+    const player = api.player(sample)!;
+    const [x, y, z] = player.position;
+    const canvas = document.querySelector("canvas")!.getBoundingClientRect();
+    return {
+      player,
+      centerHit: api.pick({ x: canvas.left + canvas.width / 2, y: canvas.top + canvas.height / 2 }),
+      groundHit: api.pick({ origin: [x, y + 0.25, z], direction: [0, -1, 0] }),
+    };
+  }, { nearClip: metrics.nearClip, ...sample });
+  return { ...query, nearClipHits: metrics.nearClipHits, catHits: metrics.catHits };
+}
+
+function failsJ5(sample: { voidRatio: number; nearBlack: number; nearClip: number }) {
+  return sample.voidRatio > config.thresholds.voidRatio || sample.nearBlack > config.thresholds.nearBlack || sample.nearClip > config.thresholds.nearClip;
 }
 
 test("guided walk @phone", async ({ page }, info) => {
@@ -229,7 +250,7 @@ test("guided walk @phone", async ({ page }, info) => {
   page.on("response", response => { if (response.status() >= 400 && failedRequests.size < 20) failedRequests.add(`${response.status()} ${response.url()}`); });
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
-  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning");
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning&qaSceneQuery=1" : "/?qaTimeBand=morning&qaSceneQuery=1");
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready" && (window as any).__gteki.route()?.ok, null, { timeout: 120_000, polling: 250 });
   const timeBand = new URL(page.url()).searchParams.get("qaTimeBand");
   expect(timeBand).toBe("morning");
@@ -277,15 +298,17 @@ test("guided walk @phone", async ({ page }, info) => {
   let simT = 0, arrived = false;
   let cuesBefore: number | null = null, cuesAfter: number | null = null, waitedS = 0;
   let lastJ5S = 0;
+  let sceneQueryExample: Awaited<ReturnType<typeof sceneDiagnostic>> | undefined;
   const probeJ5 = async (at: number) => {
     const { s, voidRatio, nearBlack } = await page.evaluate(() => {
       const g = (window as any).__gteki, e = g.scanProbe().explorer;
       const probe = g.goldenProbe(false);
       return { s: e.guide.s as number, voidRatio: probe.voidRatio as number, nearBlack: probe.nearBlack as number };
     });
-    const { nearClip } = await sceneMetrics(page);
+    const m = await sceneMetrics(page);
     lastJ5S = s;
-    return { simT: at, s, voidRatio, nearBlack, nearClip };
+    const sample = { simT: at, s, voidRatio, nearBlack, nearClip: m.nearClip };
+    return { ...sample, ...(failsJ5(sample) && { sceneQuery: await sceneDiagnostic(page, m, sample) }) };
   };
   const extraJ5: Awaited<ReturnType<typeof probeJ5>>[] = [];
   const sample = async (arrival: boolean, simMs: number) => {
@@ -333,7 +356,11 @@ test("guided walk @phone", async ({ page }, info) => {
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
     const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
     const ride = reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.rideFrame()) : undefined;
-    samples.push({ ...(reelMode === "next" ? { ride } : {}), ...(arrival ? { identity, arrivalFrame } : {}), ...(boxes ? { boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), audio: await page.evaluate(() => (window as any).__gteki.audio()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
+    const quality = { voidRatio: probe.voidRatio, nearBlack: image.nearBlack, nearClip: m.nearClip };
+    const failed = failsJ5(quality) || m.catVisible < config.thresholds.catVisibleMin;
+    const diagnostic = failed || index === 0 ? await sceneDiagnostic(page, m, quality) : undefined;
+    if (index === 0) sceneQueryExample = diagnostic;
+    samples.push({ ...(reelMode === "next" ? { ride } : {}), ...(arrival ? { identity, arrivalFrame } : {}), ...(boxes ? { boxes } : {}), ...(failed && { sceneQuery: diagnostic }), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), audio: await page.evaluate(() => (window as any).__gteki.audio()), arrival, ...quality, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
@@ -523,7 +550,7 @@ test("guided walk @phone", async ({ page }, info) => {
   const overlayTolerancePct = 1;
   const threshold = info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop;
   const rules = [ { row: "J5", metric: "voidRatio", limit: config.thresholds.voidRatio }, { row: "J5", metric: "nearBlack", limit: config.thresholds.nearBlack }, { row: "J5", metric: "nearClip", limit: config.thresholds.nearClip }, { row: "J6", metric: "catVisible", limit: config.thresholds.catVisibleMin }, { row: "J8", metric: "overlayPct", limit: threshold }, { row: "J9", metric: "overlayPct", limit: threshold } ];
-  const j5Samples = [...extraJ5, ...samples.filter(s => !s.arrival).map(({ index, simT, s, voidRatio, nearBlack, nearClip }) => ({ index, simT, s, voidRatio, nearBlack, nearClip }))].sort((a, b) => a.simT - b.simT);
+  const j5Samples = [...extraJ5, ...samples.filter(s => !s.arrival).map(({ index, simT, s, voidRatio, nearBlack, nearClip, sceneQuery }) => ({ index, simT, s, voidRatio, nearBlack, nearClip, sceneQuery }))].sort((a, b) => a.simT - b.simT);
   const j5Coverage = {
     sampleCount: j5Samples.length,
     maxGapM: j5Samples.reduce((max, sample, i) => Math.max(max, sample.s - (j5Samples[i - 1]?.s ?? 0)), 0),
@@ -593,7 +620,8 @@ test("guided walk @phone", async ({ page }, info) => {
   const j14 = () => ({ consoleErrors: [...consoleErrors], pageErrors: [...pageErrors], failedRequests: [...failedRequests] });
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const coldOpen = JSON.parse(fs.readFileSync(path.join(out, "cold-open.json"), "utf8"));
-  const journey = { sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j4, j5Coverage, j7, j11, j12, j14: j14(), unknown };
+  const hasSceneFailure = samples.some(s => s.sceneQuery) || extraJ5.some(s => s.sceneQuery);
+  const journey = { sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j4, j5Coverage, j7, j11, j12, j14: j14(), unknown, ...(!hasSceneFailure && { sceneQueryExample: { index: 0, forced: true, sceneQuery: sceneQueryExample } }) };
   fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify(journey, null, 2));
   const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `${v.index === undefined ? `${v.s.toFixed(2)} m` : `#${v.index}`} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing reel frames: ${s.failingSampleIndexes.join(", ") || "none"}`)];
   lines.push(`- J5 coverage: ${j5Coverage.sampleCount} samples, max path gap ${j5Coverage.maxGapM.toFixed(3)} m`);

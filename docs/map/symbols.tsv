@@ -408,6 +408,7 @@ darkSampleDistances	function	apps/web/src/explorer/routeGroundQa.ts
 routeGroundCounts	function	apps/web/src/explorer/routeGroundQa.ts
 sceneMeshNear	function	apps/web/src/explorer/routeGroundQa.ts
 sceneMeshProbe	function	apps/web/src/explorer/routeGroundQa.ts
+SceneQuery	class	apps/web/src/explorer/sceneQuery.ts
 CAST_HEADROOM_M	const	apps/web/src/explorer/shadows.ts
 CAST_RETUNE_M	const	apps/web/src/explorer/shadows.ts
 MeshShadowFlags	interface	apps/web/src/explorer/shadows.ts
