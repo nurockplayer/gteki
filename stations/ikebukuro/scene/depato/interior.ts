@@ -267,8 +267,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         // The B1 approach sees PARCO's header at a steep angle from the guide.
         const slot=slots[row]!, labelHeight=height*(row===parcoB1Row?0.9:0.6);
         const labelWidth=slot.width/slot.height*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
-        for(const face of [0,1,-1]){
-          const text=face===1 || (face===-1 && backText);
+        for(const face of backText?[0,1,-1]:[0,1]){
+          const text=face!==0;
           const g=new THREE.PlaneGeometry(text?labelWidth*scale:width,text?labelHeight*scale:height).toNonIndexed(),uv=g.getAttribute("uv");
           for(let i=0;i<uv.count;i++){
             uv.setX(i,(slot.x+(text?uv.getX(i)*slot.width:1))/1024);
@@ -330,9 +330,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         for(const side of [-1,1])frames.push(cube(x+side*1.8,l.y+bottom/2,z!,0.055,bottom,0.08));
         const underline=l.y+2.3-(l.index+0.25)*rowHeight;
         if(tobu){
-          // The rail rests on the posts. The row marker sits inside the front plate's outline.
+          const top=2.3+0.475*rowHeight, front=Math.cos(yaw!);
+          // Close the gaps behind the plates, with the lower rail projecting past the back.
+          detail.push(cube(x,l.y+(top+bottom)/2,z!-front*0.02,3.8,top-bottom,0.024));
           frames.push(cube(x,l.y+bottom+0.02,z!,3.66,0.04,0.13));
-          frames.push(cube(x,underline-0.1*rowHeight,z!+Math.cos(yaw!)*0.01,3.6,0.018,0.008));
+          frames.push(cube(x,underline-0.1*rowHeight,z!+front*0.01,3.6,0.018,0.008));
         }else frames.push(cube(x,underline,z!+0.01,3.6,0.025,0.025));
       }
       // Place the Tobu sign in the diagonal walk off the up escalator, below the HUD.
