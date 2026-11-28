@@ -481,8 +481,9 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
   };
   stairSlab(x35(-0.035, -0.94, 31.265), x35(-0.035, 0.96, 31.265),
     x35(4.28, -0.94, 29.25), x35(4.28, 0.96, 29.25));
-  stairSlab(x39(172.46, -178.32, 32.645), x39(173.02, -179.78, 32.645),
-    x39(170.79, -178.48, 31.57), x39(171.36, -179.94, 31.57));
+  const topLeft = x39(172.46, -178.32, 32.645), topRight = x39(173.02, -179.78, 32.645);
+  const footLeft = x39(170.79, -178.48, 31.57), footRight = x39(171.36, -179.94, 31.57);
+  stairSlab(topLeft, topRight, footLeft, footRight);
 
   // The surveyed street lip is one riser above the upper tread. Cap it at the
   // portal elevation so the walker can stand on the street threshold.
@@ -508,13 +509,35 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
   const blocker = mesh.clone(false);
   blocker.userData.gteki_role = "camera_blocker";
   blocker.userData.gteki_source = "procedural";
+
+  // The surveyed treads have no handrails. Follow their edges instead of the
+  // graph's wider switchback, whose generic guards bridge adjacent flights.
+  const railGeometry = new THREE.CylinderGeometry(0.026, 0.026, 1, 8);
+  const railMaterial = new THREE.MeshBasicMaterial({ color: 0x929a9e });
+  const rail = (from: THREE_NS.Vector3, to: THREE_NS.Vector3) => {
+    const section = new THREE.Mesh(railGeometry, railMaterial);
+    section.userData.gteki_role = "stairs_ramps";
+    const direction = to.clone().sub(from);
+    section.position.copy(from).lerp(to, 0.5);
+    section.scale.y = direction.length();
+    section.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+    mesh.add(section);
+  };
+  for (const inset of [0.06, 0.94]) {
+    const top = topLeft.clone().lerp(topRight, inset);
+    const foot = footLeft.clone().lerp(footRight, inset);
+    const raised = (p: THREE_NS.Vector3) => p.clone().add(new THREE.Vector3(0, 0.9, 0));
+    rail(raised(top), raised(foot));
+    rail(top, raised(top));
+    rail(foot, raised(foot));
+  }
   // Match the opaque, two-sided shell in the desktop depth pass. Alpha zero marks the
   // enclosure as matte in the floor-reflection pass while keeping its normals and depth.
   const normal = new THREE.MeshNormalMaterial({
     side: THREE.DoubleSide, blending: THREE.NoBlending, transparent: true, opacity: 0,
   });
   normal.allowOverride = false;
-  return { mesh, blocker, normal, threshold, x35Daylight };
+  return { mesh, blocker, normal, threshold, railGeometry, railMaterial, x35Daylight };
 }
 
 export async function buildScene(ctx: SceneContext): Promise<StationScene> {
@@ -530,7 +553,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // display stairs, suspended connector lights and short rail sections.
   root.userData.modelledStairEdges = ["w_n__x18", "e_low__x35", "s39_f__x39"];
   root.userData.modelledStairwellSlabEdges = ["s39_f__x39"];
-  const { mesh: stairEnclosures, blocker: stairEnclosureBlocker, normal: stairEnclosureNormal, threshold, x35Daylight } =
+  const { mesh: stairEnclosures, blocker: stairEnclosureBlocker, normal: stairEnclosureNormal, threshold, railGeometry, railMaterial, x35Daylight } =
     exitStairEnclosures(THREE, toRenderer, low);
   root.userData.gteki_gtao_depth_twins = [{ mesh: stairEnclosures, twin: stairEnclosureNormal, original: stairEnclosures.material }];
 
@@ -623,14 +646,18 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   let contextRoadMaterial: THREE_NS.Material | null = null;
   let disposeLandmarks: (() => void) | null = null;
   let disposed = false;
-  const n02Overlay = loadN02Overlay(THREE, ctx, root);
+  // The flat railway ribbons cut blue bands across the preview's continuous ground.
+  const n02Overlay = ctx.previewNext ? null : loadN02Overlay(THREE, ctx, root);
   const contextReady = ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     async (loaded) => {
       const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
-      if (ctx.previewNext) removeLandmarkContext(THREE, loaded.scene, ctx.quality);
+      if (ctx.previewNext) {
+        roadMaterial.fog = false;
+        removeLandmarkContext(THREE, loaded.scene, ctx.quality);
+      }
       dressContext(loaded.scene, material, roadMaterial);
-      if (ctx.previewNext) disposeLandmarks = await addLandmarks(ctx, loaded.scene);
+      if (ctx.previewNext) disposeLandmarks = await addLandmarks(ctx, loaded.scene, roadMaterial);
       await cutContextStairOpenings(THREE, loaded.scene, ctx.bundle);
       if (disposed) {
         disposeLandmarks?.();
@@ -654,7 +681,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const probe = meshesByRole.get("floor")?.[0] ?? [...meshesByRole.values()].flat()[0] ?? null;
   const cameraTrack = probe ? trackCamera(probe) : null;
   const setContext = (show: boolean) => {
-    n02Overlay.setVisible(show && context !== null);
+    n02Overlay?.setVisible(show && context !== null);
     if (!context) return;
     if (show && context.parent !== root) root.add(context);
     else if (!show && context.parent === root) root.remove(context);
@@ -863,6 +890,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       stairEnclosures.geometry.dispose();
       stairEnclosures.material.dispose();
       stairEnclosureNormal.dispose();
+      railGeometry.dispose();
+      railMaterial.dispose();
       x35Daylight.geometry.dispose();
       x35Daylight.material.dispose();
       threshold.geometry.dispose();
@@ -879,7 +908,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       acoustics?.dispose();
       cameraTrack?.dispose();
       disposed = true;
-      n02Overlay.dispose();
+      n02Overlay?.dispose();
       contextBlockers.dispose();
       disposeLandmarks?.();
       if (context) {
