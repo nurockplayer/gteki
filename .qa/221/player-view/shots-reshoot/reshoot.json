@@ -1,0 +1,67 @@
+{
+  "views": [
+    {
+      "index": 0,
+      "floor": "m6",
+      "node": "n:34dc769bdb5b49d083a211ff541f435d",
+      "heading": 263,
+      "facing": 263,
+      "headingOk": true,
+      "backM": 0.51,
+      "pitchDeg": -6.9,
+      "eyeBefore": [
+        -44.4,
+        -41.2,
+        -205.9
+      ],
+      "eyeAfter": [
+        -43.9,
+        -41.2,
+        -205.8
+      ],
+      "file": "00-m6-34dc769b-h263-back1.png"
+    },
+    {
+      "index": 1,
+      "floor": "m1",
+      "node": "n:399c24bf916c45f197e22e812433aed9",
+      "heading": 330,
+      "facing": 330,
+      "headingOk": true,
+      "backM": 0.72,
+      "pitchDeg": -6.9,
+      "eyeBefore": [
+        -0.9,
+        0,
+        14
+      ],
+      "eyeAfter": [
+        -0.5,
+        0,
+        14.6
+      ],
+      "file": "01-m1-399c24bf-h330-back1.png"
+    },
+    {
+      "index": 2,
+      "floor": "m3",
+      "node": "n:e26f39c2df0f4f3b82b9163d2230d4c8",
+      "heading": 263,
+      "facing": 263,
+      "headingOk": true,
+      "backM": 0.51,
+      "pitchDeg": -6.9,
+      "eyeBefore": [
+        -18.3,
+        -22.1,
+        -126
+      ],
+      "eyeAfter": [
+        -17.8,
+        -22.1,
+        -126.1
+      ],
+      "file": "02-m3-e26f39c2-h263-back1.png"
+    }
+  ]
+}
