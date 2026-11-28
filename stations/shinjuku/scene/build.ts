@@ -89,6 +89,7 @@ export interface BuildOptions {
   useBakedSurface?: boolean;
   /** Decorative train rhythm (#870). Read once at build time; absent = "midday", so tests stay deterministic. */
   timeBand?: TimeBand;
+  sceneQuery?: boolean;
 }
 
 /** Car pitch along the platform (m). */
@@ -791,7 +792,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   }[] = [];
 
   if (opts.previewNext) root.userData.platformEdges = layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind === "trackside").map((w) => ({ a: [w.a.x, lv.z, -w.a.y], b: [w.b.x, lv.z, -w.b.y] })));
-  const platformTactile: THREE.BufferGeometry[] = [];
+  const platformTactile: { geometry: THREE.BufferGeometry; source?: { dataId: string; floorId: string } }[] = [];
   const fasciaGeos: THREE.BufferGeometry[] = [];
   const roomFill = roomFloorFill(layout, plan);
   // ---- per level: slabs, ceilings, walls, railings, lights
@@ -873,7 +874,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     if (rg) g.add(new THREE.Mesh(track(rg), mat.steel));
 
     // platform: platform doors along trackside walls + track bed beyond
-    if (isPlatform) buildPlatformEdge(lv.walls.filter((w) => w.kind === "trackside"), lv.z, g);
+    if (isPlatform) buildPlatformEdge(lv.walls.filter((w) => w.kind === "trackside"), lv.z, g, lv.floorId);
   }
   // Fascia joins the existing stair-concrete batch below; shaft cladding is merged with the
   // source walls per level. No extra wall material draw is needed for the new enclosure.
@@ -929,8 +930,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // ---- tactile paving
   {
-    const tg: THREE.BufferGeometry[] = platformTactile.splice(0);
-    for (const t of layout.tactile) {
+    const strips = platformTactile.splice(0);
+    // Match layout.tactile's edge order without adding query metadata to the baked layout.
+    const edges = opts.sceneQuery ? bundle.edges.filter(e => e.attributes?.brail_tile === 2 && (e.geometry?.length ?? 0) >= 2
+      && e.mode !== "stairs" && e.mode !== "escalator" && e.mode !== "elevator") : undefined;
+    const floors = new Map(opts.sceneQuery ? bundle.nodes.map(n => [n.id, n.floorId]) : []);
+    for (const [lineIndex, t] of layout.tactile.entries()) {
+      const source = edges && { dataId: edges[lineIndex]!.id, floorId: floors.get(edges[lineIndex]!.from)! };
       for (let i = 1; i < t.pts.length; i++) {
         const a = t.pts[i - 1]!;
         const b = t.pts[i]!;
@@ -946,13 +952,29 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         geo.setAttribute("uv", new THREE.Float32BufferAttribute([0, 0, L / 0.3, 0, L / 0.3, 1, 0, 1], 2));
         geo.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));
         geo.setIndex([0, 2, 1, 0, 3, 2]);
-        tg.push(geo);
+        strips.push({ geometry: geo, source });
       }
     }
-    const geo = merged(tg);
+    const geo = merged(strips.map(strip => strip.geometry));
     if (geo) {
       (mat.tactile.map as THREE.Texture).rotation = Math.PI / 2;
-      root.add(new THREE.Mesh(track(geo), mat.tactile));
+      const mesh = new THREE.Mesh(track(geo), mat.tactile);
+      if (opts.sceneQuery) {
+        const owners = strips.map(strip => strip.source);
+        const position = geo.attributes.position!, index = geo.index!;
+        // Portal and stairwell cuts can renumber triangles. Look up the contact
+        // point against the original quads to keep the source tied to the hit.
+        mesh.userData.sourceAt = (point: THREE.Vector3) => {
+          const triangle = new THREE.Triangle(), closest = new THREE.Vector3();
+          for (let i = 0; i < index.count; i += 3) {
+            triangle.a.fromBufferAttribute(position, index.getX(i));
+            triangle.b.fromBufferAttribute(position, index.getX(i + 1));
+            triangle.c.fromBufferAttribute(position, index.getX(i + 2));
+            if (triangle.closestPointToPoint(point, closest).distanceToSquared(point) <= 1e-8) return owners[Math.floor(i / 6)];
+          }
+        };
+      }
+      root.add(mesh);
     }
   }
 
@@ -1358,7 +1380,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   installTightCulling(root, opts.quality);
 
   // ---- platform edge helper
-  function buildPlatformEdge(walls: WallSeg[], z: number, g: THREE.Group) {
+  function buildPlatformEdge(walls: WallSeg[], z: number, g: THREE.Group, floorId: string) {
     // Group trackside walls into platform edges by outward (track-facing) normal.
     type Grp = { out: XY; walls: WallSeg[]; len: number };
     const groups: Grp[] = [];
@@ -1481,7 +1503,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
           const [a, b, c] = points;
           const cross = (b!.x - a!.x) * (c!.y - a!.y) - (b!.y - a!.y) * (c!.x - a!.x);
           geo.setIndex(cross > 0 ? [0, 1, 2, 0, 2, 3] : [0, 2, 1, 0, 3, 2]);
-          platformTactile.push(geo);
+          platformTactile.push({ geometry: geo, source: opts.sceneQuery ? { dataId: floorId, floorId } : undefined });
         };
         const breaks = [visStart, ...cum.filter(s => s > visStart && s < visEnd), visEnd];
         for (let i = 1; i < breaks.length; i++) {

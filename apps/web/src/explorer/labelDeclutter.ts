@@ -1,14 +1,14 @@
 import { protectIdentityChip, type ScreenRect } from "./identityBoards.ts";
 
 /**
- * Screen-space declutter for POI labels in the overview, kept free of three.js and the DOM so it can be
+ * Screen-space declutter for POI labels, kept free of three.js and the DOM so it can be
  * unit-tested. Labels are placed greedily by priority; one whose rectangle meets an already placed
  * label is dropped. The caller hides the dropped ones (so they leave the layout, as the e2e overlap
  * probes measure the label DOM rects), on top of the occlusion and floor states, never instead of them.
  */
 
 /** Priority classes, best first. */
-export const LABEL_CLASS = { endpoint: 0, exit: 1, gate: 2, other: 3 } as const;
+export const LABEL_CLASS = { endpoint: 0, nextStep: 1, exit: 2, gate: 3, other: 4 } as const;
 export type LabelClass = (typeof LABEL_CLASS)[keyof typeof LABEL_CLASS];
 
 /** Origin and destination first, then exits, ticket gates, everything else. */
@@ -42,18 +42,19 @@ export function containmentShift(start: number, size: number, viewport: number, 
   return Math.max(margin, Math.min(start, viewport - margin - size)) - start;
 }
 
-/** Place an overview chip inside the viewport and protect identity boards after moving it. */
+/** Place a chip inside the viewport and protect identity boards after moving it. */
 export function placeOverviewChip(
   chip: { x: number; y: number; w: number; h: number },
-  opts: { endpoint: boolean; selected: boolean; vw: number; vh: number; identityRegions: readonly ScreenRect[]; anchorY?: number },
+  opts: { allowPartial: boolean; selected: boolean; vw: number; vh: number; identityRegions: readonly ScreenRect[]; anchorY?: number },
 ): { hidden: true } | { hidden: false; dx: number; dy: number } {
   const { x, y, w, h } = chip;
+  if (w > opts.vw || h > opts.vh) return { hidden: true };
   const rect = { x0: x - w / 2, y0: y - h / 2, x1: x + w / 2, y1: y + h / 2 };
-  if (opts.endpoint
+  if (opts.allowPartial
     ? rect.x1 <= 0 || rect.x0 >= opts.vw || rect.y1 <= 0 || rect.y0 >= opts.vh
     : x < 0 || x > opts.vw || (opts.anchorY ?? y) < 0 || (opts.anchorY ?? y) > opts.vh) return { hidden: true };
-  const dx = containmentShift(rect.x0, w, opts.vw);
-  let dy = containmentShift(rect.y0, h, opts.vh);
+  const dx = containmentShift(rect.x0, w, opts.vw, Math.min(8, (opts.vw - w) / 2));
+  let dy = containmentShift(rect.y0, h, opts.vh, Math.min(8, (opts.vh - h) / 2));
   if ((dx || dy) && opts.identityRegions.length) {
     const result = protectIdentityChip({ x0: rect.x0 + dx, x1: rect.x1 + dx, y0: rect.y0 + dy, y1: rect.y1 + dy }, opts.selected, opts.identityRegions, opts.vh);
     if (result.hidden) return { hidden: true };
@@ -76,8 +77,7 @@ export const DECLUTTER_HOLD_PX = 4;
 
 /**
  * Ids of the labels to keep. Properties:
- * - no two kept labels' padded rectangles intersect, except endpoint labels (class `endpoint`), which are
- *   always kept (a start and a destination that sit close together both stay findable);
+ * - no two kept labels intersect. Endpoints can sit flush so close route choices stay findable;
  * - labels are considered in order of class, then clear before faded, then routable before search-only,
  *   then id, so a lower-priority label never takes the place of a higher one;
  * - the result depends only on the input (order of `items` does not matter).
@@ -98,10 +98,8 @@ export function declutter(items: readonly DeclutterItem[], options: DeclutterOpt
     // `gap` is the clearance kept to every placed label; one that was hidden needs the extra `hold` to come back.
     const gap = it.klass === LABEL_CLASS.endpoint ? 0 : it.wasVisible ? pad : pad + hold;
     let clear = true;
-    if (it.klass !== LABEL_CLASS.endpoint) {
-      for (let i = 0; i < placed; i++) {
-        if (l < Rr[i]! + gap && r > L[i]! - gap && t < B[i]! + gap && b > T[i]! - gap) { clear = false; break; }
-      }
+    for (let i = 0; i < placed; i++) {
+      if (l < Rr[i]! + gap && r > L[i]! - gap && t < B[i]! + gap && b > T[i]! - gap) { clear = false; break; }
     }
     if (!clear) continue;
     keep.add(it.id);

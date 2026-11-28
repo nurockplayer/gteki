@@ -1,32 +1,15 @@
 import type { SceneContext, StationScene } from "@gteki/scene-api";
+import { discoverRailLanes, mountRailChunks, type RailBuilder, type RailLane } from "@gteki/scene-api/rail-registry";
 import type { Edge, EvidenceRef, Node, Poi, StationBundle } from "@gteki/schema";
 import { stableHypot } from "./stable-hypot.ts";
 
-type XY = [number, number];
 type XYZ = [number, number, number];
 type Names = { ja: string; en: string };
 
-export interface RailLane {
-  line: Names;
-  operator: string;
-  lineCode: string;
-  status: "evidence" | "representative" | "sourced";
-  levels: { id: string; label: string; z_m: number; source: string }[];
-  gates: { id: string; poiId?: string | null; side: "public" | "paid"; position: XYZ | null; source: string }[];
-  platforms: { id: string; poiId?: string; number: number | string; track: number | string; services: string[]; level: string; centerline: [XY, XY] | null; width_m: number; length_m: number; source: string }[];
-  connectors: { from: string; to: string; kind: "walk" | "stairs" | "escalator" | "lift" | "gate"; source: string }[];
-  openings?: { position: XYZ; along: XY; width_m: number; depth_m: number; height_m: number }[];
-  sources: { id: string; url?: string; path?: string; read_date: string; terms_ref: string }[];
-  gaps: string[];
-}
-
 const B1 = "toei-nwd-m1";
 const laneFiles = import.meta.glob<RailLane>("../data/rail/*.json", { eager: true, import: "default" });
-const sceneFiles = import.meta.glob<(ctx: SceneContext, lane: RailLane) => StationScene | Promise<StationScene>>("./rail/*.ts", { import: "default" });
-const lanes = Object.entries(laneFiles).map(([path, lane]) => ({
-  prefix: path.slice(path.lastIndexOf("/") + 1, -5),
-  lane,
-}));
+const sceneFiles = import.meta.glob<RailBuilder>(["./rail/*.ts", "!./rail/*.test.ts"], { import: "default" });
+const lanes = discoverRailLanes(laneFiles, sceneFiles);
 
 const names = (text: Names) => [{ lang: "ja", text: text.ja }, { lang: "en", text: text.en }];
 const previewNote = names({ ja: "プレビュー用の参考経路です。実際の場所や通行を確認したものではありません。", en: "Representative preview. Placement and access have not been surveyed." });
@@ -38,9 +21,9 @@ export function mergeRailBundle(bundle: StationBundle): StationBundle {
   const publicNodes = new Set(bundle.edges.filter(edge => edge.mode === "walk" && edge.paid === false && edge.crossesFareBoundary === false)
     .flatMap(edge => [edge.from, edge.to]));
   const concourse = bundle.nodes.filter(node => node.floorId === B1 && publicNodes.has(node.id));
-  for (const { prefix, lane } of lanes) {
+  for (const { prefix, lane, load } of lanes) {
     const id = (local: string) => `rail:${prefix}:${local}`;
-    const deferred = sceneFiles[`./rail/${prefix}.ts`] !== undefined;
+    const deferred = load !== undefined;
     const levelId = (level: string) => level === B1 ? B1 : id(level);
     const evidence = (sourceId: string): EvidenceRef => ({
       sourceIds: bundle.sources.some(source => source.id === sourceId) ? [sourceId] : [],
@@ -121,33 +104,10 @@ export function attachRailScene(ctx: SceneContext, scene: StationScene): Station
     return { center: point(opening.position), along: new V(x, 0, -y), across: new V(y, 0, x),
       width: opening.width_m, depth: opening.depth_m, height: opening.height_m };
   }));
-  const queued = lanes.flatMap(({ lane, prefix }) => {
-    const load = sceneFiles[`./rail/${prefix}.ts`];
+  const queued = lanes.flatMap(({ lane, load }) => {
     if (!load) return [];
-    const gates = lane.gates.flatMap(gate => gate.position ? [point(gate.position)] : []);
-    return [{ lane, load, gates }];
+    const anchors = lane.gates.flatMap(gate => gate.position ? [point(gate.position)] : []);
+    return [{ lane, load, anchors }];
   });
-  const chunks: StationScene[] = [];
-  let disposed = false;
-  return {
-    ...scene,
-    openings,
-    approach(position) {
-      const index = queued.findIndex(entry => entry.gates.some(gate => gate.distanceToSquared(position) <= 24 ** 2));
-      if (index < 0) return;
-      const { lane, load } = queued.splice(index, 1)[0]!;
-      void load().then(build => build(ctx, lane)).then(chunk => {
-        if (disposed) { chunk.dispose(); return; }
-        chunks.push(chunk);
-        scene.root.add(chunk.root);
-        chunk.root.updateWorldMatrix(true, true);
-        ctx.mountChunk?.(chunk);
-      });
-    },
-    dispose() {
-      disposed = true;
-      for (const chunk of chunks) chunk.dispose();
-      scene.dispose();
-    },
-  };
+  return { ...mountRailChunks(ctx, scene, queued, 24), openings };
 }

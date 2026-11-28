@@ -83,10 +83,20 @@ workstreams:
       - id: J5
         requirement: No void, no black holes, the camera never inside geometry
         judge: "script: guide camera samples ≤ 2.5 m apart along the path, with count and max gap in journey.json"
-        status: FAIL
+        status: PASS
         context: whole walk
-        status_detail: "FAIL: desktop 1 / 38, phone 0 / 38 (run 44940000006, main b99e7f0b equivalent). Near clip 0 since #1479; desktop void 0.0085 at 88 s (B3 wall slit, draft PR #1478)."
+        status_detail: "PASS (re-scored 2026-11-28 12:50 JST, three main runs 46086152142 (498e3f0d), 46090968291 (82b58f7c), 46100381344 (fde93d17)): desktop-chromium and phone-chromium all pass; maxClip 0, maxVoid 0 on every run. Previously intermittent phone near clip tracked in #1653."
+        verified_at: 2026-11-28 12:50 JST
+        verified_sha: fde93d17
         evidence:
+          - label: "Issue #1653"
+            url: https://github.com/nurockplayer/gteki/issues/1653
+          - label: Reel run 46086152142
+            url: https://github.com/nurockplayer/gteki/actions/runs/46086152142
+          - label: Reel run 46090968291
+            url: https://github.com/nurockplayer/gteki/actions/runs/46090968291
+          - label: Reel run 46100381344
+            url: https://github.com/nurockplayer/gteki/actions/runs/46100381344
           - label: Original journey judgement
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
       - id: J6
@@ -94,10 +104,18 @@ workstreams:
         judge: "script: avatar visible in ≥ 95% of samples"
         status: PASS
         context: whole walk
-        status_detail: "PASS since #1332 (2026-11-15 08:0x JST): the script passes since #1268 (39 / 39 on desktop and on phone, main 2ffb4a65, E2E smoke run 43641997007), and the art director accepted the eased body-check raise on PR #1332 (frame at 11.88 s: 5.4° → 1.56°, phone 1.59°; budget 3°). The remaining frames over 3° are corner yaw snaps, #1331, not this row"
-        verified_at: 2026-11-15 JST
-        verified_sha: 2ffb4a65
+        status_detail: "PASS (re-scored 2026-11-28 12:50 JST, three main runs 46086152142 (498e3f0d), 46090968291 (82b58f7c), 46100381344 (fde93d17)): desktop-chromium and phone-chromium pass; worst phone sample is 7 m @ 0.56. Phone regression #1652 is fixed."
+        verified_at: 2026-11-28 12:50 JST
+        verified_sha: fde93d17
         evidence:
+          - label: "Issue #1652"
+            url: https://github.com/nurockplayer/gteki/issues/1652
+          - label: Reel run 46086152142
+            url: https://github.com/nurockplayer/gteki/actions/runs/46086152142
+          - label: Reel run 46090968291
+            url: https://github.com/nurockplayer/gteki/actions/runs/46090968291
+          - label: Reel run 46100381344
+            url: https://github.com/nurockplayer/gteki/actions/runs/46100381344
           - label: "PR #1332"
             url: https://github.com/nurockplayer/gteki/pull/1332
           - label: "PR #1268"

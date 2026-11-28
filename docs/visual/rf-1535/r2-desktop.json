@@ -1,0 +1,25 @@
+{
+  "sourceSha": "743a6f2406a9bb68c0aa869e590d505d71e57c65",
+  "capturedAtUTC": "2026-11-24T09:42:28.562Z",
+  "goal": "sp_e",
+  "verified": true,
+  "firstIllustrative": 45,
+  "fences": 1,
+  "barrierHits": 0,
+  "clearanceSampleM": 1.7769961524571816,
+  "arrival": "Illustrative preview · Seibu B1",
+  "instruction": "Illustrative leg into Seibu B1",
+  "avatar": {
+    "x": 22.9055,
+    "y": -94,
+    "z": 27.700000762939453
+  },
+  "mode": "guide",
+  "arrived": true,
+  "viewport": [
+    960,
+    600
+  ],
+  "sceneError": null,
+  "hud": "Illustrative preview · Seibu B1"
+}

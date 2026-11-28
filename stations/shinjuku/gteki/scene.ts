@@ -109,7 +109,7 @@ function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt
     update: (dt: number, t: number, camera?: THREE.Camera) => {
       refreshViewer();
       stepBuilt(dt, t);
-      crowd?.update(dt, t);
+      crowd?.update(dt, t, camera?.position);
       stepAudio?.(dt, camera);
     },
     dispose() {
@@ -287,6 +287,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
   // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
   const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());
+  const sceneQuery = typeof location !== "undefined" && new URLSearchParams(location.search).get("qaSceneQuery") === "1";
   // The kit may remove nosing triangles. Retain that procedural placeholder for camera queries.
   let nosingProxy: THREE.Mesh | undefined;
   const cameraKit: KitSwap | undefined = kit && { apply: (c) => {
@@ -302,7 +303,8 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     }
     return kit.apply(c);
   } };
-  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, layoutBakeText: options.layoutBakeText, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(cameraKit ? { kit: cameraKit } : {}) });
+  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, layoutBakeText: options.layoutBakeText, verifyRestrictedInput: true, sceneQuery, ...(timeBand ? { timeBand } : {}), ...(cameraKit ? { kit: cameraKit } : {}) });
+  if (sceneQuery) for (const [floorId, group] of built.levelGroups) group.userData.floorId = floorId;
   installLightPreset(built.root, parseLightPreset(typeof location === "undefined" ? "" : location.search));
   const { layout } = built;
 
