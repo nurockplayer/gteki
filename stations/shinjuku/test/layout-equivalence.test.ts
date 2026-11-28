@@ -25,6 +25,6 @@ describe("layout equivalence", () => {
     // at -1.6, 636c6fc9 and 0564105d at -1.68) up to their own roofs, and (fix 1) cuts
     // that shell only where a passage crosses it. Includes the merge with main's
     // cornerFills changes (#1170/#1188). #1192 restores the B3 concourse source wall.
-    expect(digest).toBe("606239a7887ae61e32656017677eb0ca439eb4d5328834628cf299a65a0659db");
+    expect(digest).toBe("8ff3ff8540b60611c2670d181253516be6ead063a2527ae05222966b3024de82");
   });
 });
