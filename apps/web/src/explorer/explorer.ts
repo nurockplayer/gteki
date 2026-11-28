@@ -3058,6 +3058,7 @@ export class Explorer {
     }
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
+    this.stationScene?.carryWalker?.(this.pos, 0, true);
     this.teleported = true;
     if (p.tx || p.tz) this.yaw = Math.atan2(-p.tx, -p.tz);
     this.guideYawRate = 0;
@@ -3469,6 +3470,7 @@ export class Explorer {
   }
 
   private stepWalk(dt: number): void {
+    if (this.stationScene?.carryWalker?.(this.pos, dt)) return;
     const look = this.input.consumeLook();
     const mv = this.input.move();
     if (this.openingState === "active" && (look.dx || look.dy || look.zoom || mv.x || mv.y)) {
@@ -3538,6 +3540,7 @@ export class Explorer {
     if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
+    this.stationScene?.carryWalker?.(this.pos, dt, true);
     // During the hold the look follows the framed board instead of the route; the rest of the frame steers as usual.
     const holdDt = Math.min(dt, this.guideIdentityHoldS);
     const steeringDt = holdDt > 0 && this.trackGuideIdentity(p, holdDt) ? dt - holdDt : dt;

@@ -3,7 +3,10 @@ import { discoverRailLanes, mountRailChunks, type RailBuilder, type RailLane } f
 import type { Edge, Node, Poi, StationBundle } from "@gteki/schema";
 
 type Position = [number, number, number];
-type IkebukuroRailLane = RailLane & { serviceNames?: Record<string, RailLane["line"]> };
+type IkebukuroRailLane = RailLane & {
+  serviceNames?: Record<string, RailLane["line"]>;
+  connectors: (RailLane["connectors"][number] & { paid?: boolean; deferredScene?: boolean })[];
+};
 
 const lanes = import.meta.glob<RailLane>("../data/rail/*.json", { eager: true, import: "default" });
 const builders = import.meta.glob<RailBuilder>(["./rail/*.ts", "!./rail/*.test.ts"], { import: "default" });
@@ -20,7 +23,7 @@ export function railBundle(bundle: StationBundle): StationBundle {
 
   for (const { lane, prefix, load } of entries) {
     if (!load) continue;
-    const serviceNames = (lane as IkebukuroRailLane).serviceNames;
+    const { serviceNames, connectors } = lane as IkebukuroRailLane;
     const evidence = (id: string) => ({
       sourceIds: [id],
       method: `Ikebukuro rail preview (${lane.status})`,
@@ -57,7 +60,13 @@ export function railBundle(bundle: StationBundle): StationBundle {
       } else if (gate.position) {
         const level = gate.level ?? lane.levels.find(level => level.z_m === gate.position![2])!.id;
         const node = place(gate.id, level, gate.position, "ticket_gate", gate.source);
-        if (poi && gate.side === "public") pois.set(poi.id, { ...poi, floorId: level, displayPosition: node.position, connectorNodeIds: [node.id] });
+        if (poi && gate.side === "public") pois.set(poi.id, {
+          ...poi, floorId: level, displayPosition: node.position, connectorNodeIds: [node.id],
+          evidence: evidence(gate.source), notes: [
+            { lang: "ja", text: "改札の位置はプレビュー用の参考配置です。" },
+            { lang: "en", text: "Illustrative fare gate placement." },
+          ],
+        });
       }
     }
     for (const point of lane.waypoints ?? []) place(point.id, point.level, point.position, "junction", point.source);
@@ -82,11 +91,12 @@ export function railBundle(bundle: StationBundle): StationBundle {
         ] } : {}),
       });
     }
-    for (const connector of lane.connectors) {
+    for (const connector of connectors) {
       const from = nodes.get(aliases.get(connector.from) ?? connector.from);
       const to = nodes.get(aliases.get(connector.to) ?? connector.to);
       if (!from || !to) continue;
       const mode = connector.kind === "lift" ? "elevator" : connector.kind;
+      const steps = mode === "stairs" || mode === "escalator";
       const source = evidence(connector.source);
       const geometry = [from.position, ...(connector.via ?? []).map(([x, y, z]) => ({ x, y, z })), to.position];
       let lengthM = 0;
@@ -96,10 +106,10 @@ export function railBundle(bundle: StationBundle): StationBundle {
       }
       edges.push({
         id: edgeId(prefix, from.id, to.id), from: from.id, to: to.id, direction: "both", mode,
-        lengthM, geometry, paid: true, crossesFareBoundary: mode === "gate",
-        steps: mode === "stairs" || mode === "escalator", wheelchair: mode === "stairs" || mode === "escalator" ? false : null,
+        lengthM, geometry, paid: connector.paid ?? true, crossesFareBoundary: mode === "gate",
+        steps, wheelchair: steps ? false : prefix === "jr" ? true : null,
         hours: null, closed: false, verification: "verified", geometryEvidence: source, accessEvidence: source,
-        attributes: { deferredScene: true },
+        attributes: { deferredScene: connector.deferredScene ?? true },
       });
     }
   }
@@ -109,6 +119,13 @@ export function railBundle(bundle: StationBundle): StationBundle {
 /** Load each lane's geometry once its public gate or platform is within approach distance. */
 export async function buildRailScene(ctx: SceneContext, base: BuildScene): Promise<StationScene> {
   const scene = await base(ctx);
+  // The public corridor generator omits end walls where it meets existing floor.
+  const northGate = ctx.bundle.nodes.find(node => node.id === "jr-north-public")!.position;
+  const { THREE } = ctx;
+  const seam = new THREE.Mesh(new THREE.BoxGeometry(3, 0.16, 2.6), new THREE.MeshBasicMaterial({ color: 0xb6b1a2 }));
+  seam.position.set(...ctx.enuToRenderer({ ...northGate, z: northGate.z! - 0.08 }));
+  scene.root.add(seam);
+  scene.walkable.push(seam);
   const queued = entries.flatMap(({ lane, prefix, load }) => {
     if (!load) return [];
     const nodeIds = new Set(ctx.bundle.edges.filter(edge => edge.id.startsWith(`rail:${prefix}:`)).flatMap(edge => [edge.from, edge.to]));
@@ -116,5 +133,13 @@ export async function buildRailScene(ctx: SceneContext, base: BuildScene): Promi
       .map(node => new ctx.THREE.Vector3(...ctx.enuToRenderer({ ...node.position, z: node.position.z! })));
     return [{ anchors, lane, load }];
   });
-  return mountRailChunks(ctx, scene, queued, 12);
+  const mounted = mountRailChunks(ctx, scene, queued, 12);
+  return {
+    ...mounted,
+    dispose() {
+      seam.geometry.dispose();
+      seam.material.dispose();
+      mounted.dispose();
+    },
+  };
 }
