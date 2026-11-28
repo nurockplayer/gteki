@@ -9,9 +9,11 @@ metadata:
 
 # Export Pipelines
 
-The execution model is in `blender-core`. Run `blender-asset-qa` (and `blender-game-optimization` for budgets) **before** exporting.
+The execution model is in `blender-core`. Check the asset and its budgets with the repository's available workflow before exporting; upstream `blender-asset-qa` and `blender-game-optimization` are not installed here.
 
 ## One call
+The following commands show upstream presets for reference only. `scripts/export_asset.py` is not installed here; do not run or fetch it. Apply the relevant exporter settings through the repository's Blender project wrapper.
+
 ```
 scripts/export_asset.py -- --preset unreal_skeletal --objects SK_Hero --out //export/SK_Hero.fbx
 scripts/export_asset.py -- --preset web --collection Export --out //export/scene.glb

@@ -12,6 +12,8 @@ metadata:
 The execution model is in `blender-core`. Scene lighting and cameras are in `blender-lighting-lookdev`.
 
 ## One call
+The following commands show upstream presets for reference only. `scripts/render_batch.py` is not installed here; do not run or fetch it. Apply the relevant render settings through the repository's Blender project wrapper.
+
 ```
 scripts/render_batch.py -- --engine CYCLES --preset final --res 1920 1080 --out //render/hero_#### --frames 1
 scripts/render_batch.py -- --preset preview --frames 1-120 --format MP4 --out //render/turntable

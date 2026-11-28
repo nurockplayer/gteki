@@ -12,7 +12,7 @@ metadata:
 The execution model is in `blender-core`. Measured values are in [references/pbr-values.md](references/pbr-values.md).
 
 ## Fast paths
-- Texture set → material: `scripts/build_pbr_material.py -- --name M_Crate --textures //tex/crate --objects SM_Crate`. It detects maps by filename (Poly Haven, ambientCG, Substance, UE suffixes), sets color spaces, splits ORM, flips DirectX normals, and routes AO to glTF.
+The upstream `scripts/build_pbr_material.py` command below is a reference example only; that helper is not installed here and must not be run or fetched. For a texture set, identify maps by filename (Poly Haven, ambientCG, Substance, UE suffixes), set color spaces, split ORM, flip DirectX normals, and route AO to glTF using the repository's Blender project wrapper.
 - Solid physically-plausible material: `--preset gold|iron|plastic|rubber|wood|glass|skin|...` with an optional `--color R G B` (sRGB).
 
 ## The rules (violations are what make renders look "CG")

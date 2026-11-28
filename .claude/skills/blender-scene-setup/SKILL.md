@@ -12,13 +12,13 @@ metadata:
 The execution model and verification steps are in `blender-core`.
 
 ## Procedure
-1. Run `scripts/scene_audit.py` (add `--fix purge scale paths` only on files you own). It reports units, unapplied/negative scale, default names, objects in the scene root, missing images, orphans and far-off origins.
+1. Audit units, unapplied/negative scale, default names, scene-root objects, missing images, orphans and far-off origins. The upstream `scripts/scene_audit.py` helper (including its `--fix` options) is not installed here; do not run it.
 2. Set units: Metric, Unit Scale **1.0**, Length meters. Keep 1.0 even for Unreal/Roblox, because exporters handle the conversion (see `blender-export-pipelines`).
 3. Build the collection layout (below). Every object must be in a named collection, never the scene root.
 4. Name everything with the conventions below. Rename after every duplicate or join so no `.001` suffixes remain.
 5. Set origins: props at the bottom-center (they sit on the ground at Z=0), characters at world origin between the feet, doors/hinges at the pivot.
 6. Apply rotation and scale on meshes (Ctrl+A). Keep location unless the asset should export at the origin.
-7. Re-run the audit. It's done when `issues` is empty or every remaining issue is intentional and explained.
+7. Repeat the audit. It's done when issues are resolved or every remaining issue is intentional and explained.
 
 ## Collection layout (one asset per .blend, or one collection per asset)
 ```

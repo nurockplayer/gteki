@@ -12,6 +12,8 @@ metadata:
 The execution model is in `blender-core`. UVs come from `blender-retopology-uv` and materials from `blender-pbr-materials`.
 
 ## One call
+The following is an upstream helper example for reference only. `scripts/bake_maps.py` is not installed here; do not run or fetch it. Follow the baking preparation and settings guidance below through the repository's Blender project wrapper.
+
 ```
 scripts/bake_maps.py -- --low SM_Crate --high Crate_high Crate_bolts --maps normal ao curvature id \
    --res 2048 --samples 64 --margin-px 16 --pack-orm --out //textures
@@ -50,7 +52,7 @@ ORM = R:AO G:Roughness B:Metallic, the glTF/Unreal standard. Unity uses a differ
 |---|---|---|
 | Wavy lines on cylinders | low poly too low, smoothing gradients | add segments, use a cage, or more support on the low |
 | Skewed details (bolts lean) | ray direction follows the averaged low normals | hard edges + seams, a cage, or bake the floater separately |
-| Black/garbage areas | rays miss or hit the back faces | raise extrusion, fix flipped normals (`blender-asset-qa`), check high coverage |
+| Black/garbage areas | rays miss or hit the back faces | raise extrusion, check flipped normals and high coverage; upstream `blender-asset-qa` is not installed here |
 | Seams visible in engine | margin too small, hard edge without a seam, different tangents | margin ≥ 16 px @2k, seams at hard edges, export tangents (MikkTSpace) |
 | Details from a neighbouring part | parts too close | explode the bake, or bake per object pair |
 | Inverted green look in engine | OpenGL/DirectX mismatch | `--directx` for Unreal, or flip G in the texture importer |
@@ -62,8 +64,8 @@ ORM = R:AO G:Roughness B:Metallic, the glTF/Unreal standard. Unity uses a differ
 - **Multires** (no separate high object): `bake.use_multires=True`, `bake.type="NORMALS"|"DISPLACEMENT"|"VECTOR_DISPLACEMENT"`, `bake.use_lores_mesh=True`, then `bpy.ops.object.bake_image()`. The viewport level is the low, the sculpt level is the high.
 
 ## Gotchas
-- The target image must be the **active** Image Texture node in **every** material of the low object (the script handles this).
+- The target image must be the **active** Image Texture node in **every** material of the low object.
 - Baking in Cycles uses the active UV map (`--uv-layer` to pick).
 - Images aren't saved automatically: `img.save()` or `save_render`. Packed or internal images disappear on reload.
 - 5.2: the Cycles texture cache (`.tx`) is for render memory and doesn't affect bake results.
-- Run `blender-asset-qa` on low + high first, because flipped normals and floating chunks produce most bake garbage.
+- Check low + high for flipped normals and floating chunks before baking. Upstream `blender-asset-qa` is not installed here; do not invoke it.

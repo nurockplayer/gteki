@@ -38,24 +38,26 @@ metadata:
 | Cloth, rigid body, fluids, hair, GN physics | `blender-simulation` |
 | Writing add-ons / extensions | `blender-addon-development` |
 | Batch/headless pipelines, file conversion | `blender-pipeline-automation` |
-| Checking a mesh/asset before delivery (always) | `blender-asset-qa` |
+| Checking a mesh/asset before delivery | Check geometry and outputs with the repository's available QA workflow; upstream `blender-asset-qa` is not installed here |
 | End-to-end playbooks (prop, character, Roblox, product shot) | `blender-workflow-recipes` |
 
 ## Execute
-**Live (blender-mcp `execute_blender_code`)**: work in small steps and print only what you need. To call a skill script, import it:
+**This repository contains reference Markdown only. None of the upstream helper scripts or companion skills named below are installed. Do not run or import them; use the repository's Blender project wrapper and its available checks.**
+
+**Live (upstream example only; unavailable in this repository)**: work in small steps and print only what you need. The upstream skill script import example is:
 ```python
 import sys, importlib; sys.path.insert(0, r"<skills_dir>/blender-asset-qa/scripts")
 import qa_check; importlib.reload(qa_check); print(qa_check.run(objects=["Chair"]))
 ```
-Each MCP call runs in a **fresh namespace**: re-`import` in every call. That's cheap because modules stay cached in `sys.modules`. `reload` only after editing a script.
-**Headless (any agent with a shell)**: this prints only the script's JSON (`@@JSON@@` lines):
+Each upstream MCP call runs in a **fresh namespace**: re-`import` in every call. That's cheap because modules stay cached in `sys.modules`. `reload` only after editing a script.
+**Headless (upstream example only; unavailable here; do not run)**: these commands show the upstream interface and are not runnable from this Markdown-only install:
 ```
 python <skills_dir>/blender-core/scripts/run_in_blender.py --blend in.blend <script.py> -- --objects Chair --save out.blend
 python <skills_dir>/blender-core/scripts/run_in_blender.py --expr "import bpy; print(len(bpy.data.objects))"
 ```
 **Windows + Git Bash**: MSYS rewrites `//out.png` to `/out.png` (→ `C:\out.png`). Prefix with `MSYS_NO_PATHCONV=1` and pass skill paths as `$(cygpath -m ~/.claude/skills)/...` (or use PowerShell).
-Raw form: `blender -b in.blend --factory-startup --python-exit-code 1 -P x.py -- args`. Every script here exposes `run(**kw) -> dict` and the same flags after `--`.
-**First call in a session**: `scripts/env_report.py`, which returns the version, engines, GPU, add-ons, units, color management and scene counts.
+Raw upstream form: `blender -b in.blend --factory-startup --python-exit-code 1 -P x.py -- args`. Upstream scripts expose `run(**kw) -> dict` and the same flags after `--`.
+**First call in an upstream session**: `scripts/env_report.py` reports version, engines, GPU, add-ons, units, color management and scene counts. It is not installed here; use the repository wrapper for Blender tasks.
 
 ## Rules
 - **Data API over operators**: use `bpy.data`, `bmesh`, `mesh.attributes`, and `foreach_get/set` with numpy. Operators depend on context and selection, and many need a 3D View, which background mode doesn't have.
@@ -78,8 +80,8 @@ Raw form: `blender -b in.blend --factory-startup --python-exit-code 1 -P x.py --
 
 ## Verify (required before saying "done")
 1. Numbers, not adjectives: report tris, objects, materials, dimensions (`ob.dimensions`) and the output files written.
-2. Geometry changed → run `blender-asset-qa` `qa_check.py` (z-fighting, detached parts, non-manifold, flipped normals, scale).
-3. Look at it: MCP `look` (`mode="angles"`, shading `material`/`wireframe`). Headless: `blender-asset-qa/scripts/review_shots.py` renders contact sheets.
+2. Geometry changed → check for z-fighting, detached parts, non-manifold geometry, flipped normals and scale with the repository's available QA workflow. Upstream `qa_check.py` is not installed here; do not invoke it.
+3. Look at it: use MCP `look` (`mode="angles"`, shading `material`/`wireframe`) if available. Upstream `review_shots.py` is not installed here; do not invoke it.
 4. Re-read your own output: confirm that exported files exist and that their size is non-zero.
 
 ## References
