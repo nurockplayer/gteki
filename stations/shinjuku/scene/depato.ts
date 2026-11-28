@@ -4,14 +4,15 @@ import type { Edge, Node, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import type { Object3D, Vector3 } from "three";
 import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../apps/web/src/explorer/portalCut.ts";
-import { depatoBundle, depatoLayout, type PlanPoint } from "../../ikebukuro/scene/depato/layout.ts";
+import { depatoBundle, depatoLayout, readDepatoFloors, type PlanPoint } from "../../ikebukuro/scene/depato/layout.ts";
 import { buildDepatoInterior } from "../../ikebukuro/scene/depato/interior.ts";
 import floorData from "../data/depato-floors.json";
 import rollout from "../data/depato-rollout.json";
 import { stableHypot } from "./stable-hypot.ts";
 
-const layouts = rollout.stores.map(row => {
-  const store = floorData.stores.find(s => s.id === row.id)!;
+const floorStores = readDepatoFloors(floorData);
+export const layouts = rollout.stores.map(row => {
+  const store = floorStores.find(s => s.id === row.id)!;
   const [doorX, doorZ] = row.entrance.point as PlanPoint;
   const [inwardX, inwardZ] = row.entrance.inward as PlanPoint;
   const layout = depatoLayout({
