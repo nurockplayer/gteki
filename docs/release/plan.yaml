@@ -83,29 +83,39 @@ workstreams:
       - id: J5
         requirement: No void, no black holes, the camera never inside geometry
         judge: "script: guide camera samples ≤ 2.5 m apart along the path, with count and max gap in journey.json"
-        status: FAIL
+        status: PASS
         context: whole walk
-        status_detail: "FAIL (re-scored 2026-11-27 22:3x JST, main 79b47a6b, E2E smoke run 45996801987 + 9 main runs 11-26→11-27): void 0 on every run (B3 slit fixed by #1527), 109 samples, max gap 2.44 m, desktop near clip 0. Phone near clip is intermittent at s ≈ 74.5 m (3 / 9 runs: 77adb66f 0.78, 4709b7d6 0.55, 3f9d2344 1.0) → #1653"
+        status_detail: "PASS (re-scored 2026-11-28 12:50 JST, three main runs 46086152142 (498e3f0d), 46090968291 (82b58f7c), 46100381344 (fde93d17)): desktop-chromium and phone-chromium all pass; maxClip 0, maxVoid 0 on every run. Previously intermittent phone near clip tracked in #1653."
+        verified_at: 2026-11-28 12:50 JST
+        verified_sha: fde93d17
         evidence:
           - label: "Issue #1653"
             url: https://github.com/nurockplayer/gteki/issues/1653
-          - label: Reel run 45996801987
-            url: https://github.com/nurockplayer/gteki/actions/runs/45996801987
+          - label: Reel run 46086152142
+            url: https://github.com/nurockplayer/gteki/actions/runs/46086152142
+          - label: Reel run 46090968291
+            url: https://github.com/nurockplayer/gteki/actions/runs/46090968291
+          - label: Reel run 46100381344
+            url: https://github.com/nurockplayer/gteki/actions/runs/46100381344
           - label: Original journey judgement
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
       - id: J6
         requirement: The cat is always in view
         judge: "script: avatar visible in ≥ 95% of samples"
-        status: FAIL
+        status: PASS
         context: whole walk
-        status_detail: "FAIL (re-scored 2026-11-27 22:3x JST): phone default fails on every main run checked from cb0ef7c1 (2026-11-25) to 77adb66f: sample 9, s = 85.7 m, catVisible 0.22; desktop passes. Last known pass 2ffb4a65 (2026-11-15) → #1652 (breakage). Was PASS since #1332"
-        verified_at: 2026-11-27 JST
-        verified_sha: 79b47a6b
+        status_detail: "PASS (re-scored 2026-11-28 12:50 JST, three main runs 46086152142 (498e3f0d), 46090968291 (82b58f7c), 46100381344 (fde93d17)): desktop-chromium and phone-chromium pass; worst phone sample is 7 m @ 0.56. Phone regression #1652 is fixed."
+        verified_at: 2026-11-28 12:50 JST
+        verified_sha: fde93d17
         evidence:
           - label: "Issue #1652"
             url: https://github.com/nurockplayer/gteki/issues/1652
-          - label: Reel run 45996801987
-            url: https://github.com/nurockplayer/gteki/actions/runs/45996801987
+          - label: Reel run 46086152142
+            url: https://github.com/nurockplayer/gteki/actions/runs/46086152142
+          - label: Reel run 46090968291
+            url: https://github.com/nurockplayer/gteki/actions/runs/46090968291
+          - label: Reel run 46100381344
+            url: https://github.com/nurockplayer/gteki/actions/runs/46100381344
           - label: "PR #1332"
             url: https://github.com/nurockplayer/gteki/pull/1332
           - label: "PR #1268"
