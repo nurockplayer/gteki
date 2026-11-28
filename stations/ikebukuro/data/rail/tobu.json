@@ -1,0 +1,176 @@
+{
+  "line": { "ja": "東武東上線", "en": "Tobu Tojo Line" },
+  "operator": "Tobu Railway",
+  "lineCode": "TJ",
+  "stationCode": "TJ01",
+  "status": "representative",
+  "levels": [
+    { "id": "b1", "label": "B1", "z_m": 28, "source": "toshima-accessibility", "elevationStatus": "representative" },
+    { "id": "tobu-1f", "label": "1F", "z_m": 32.5, "source": "tobu-tj-guide", "elevationStatus": "representative" }
+  ],
+  "gates": [
+    {
+      "id": "tobu-central-gate-1",
+      "name": { "ja": "中央1改札口", "en": "Central Gate 1" },
+      "poiId": "tobu-central-gate-1",
+      "side": "public",
+      "level": "b1",
+      "position": null,
+      "source": "tobu-map"
+    },
+    {
+      "id": "tobu-central-gate-2",
+      "name": { "ja": "中央2改札口", "en": "Central Gate 2" },
+      "poiId": "tobu-central-gate-2",
+      "side": "public",
+      "level": "b1",
+      "position": null,
+      "publicApproach": { "nodeId": "c_w", "edgeId": "c_w__c_mid", "source": "ikebukuro-public-graph" },
+      "source": "tobu-map"
+    },
+    {
+      "id": "tobu-north-gate",
+      "name": { "ja": "北改札口", "en": "North Gate" },
+      "poiId": "tobu-north-gate",
+      "side": "public",
+      "level": "b1",
+      "position": null,
+      "source": "tobu-map"
+    },
+    {
+      "id": "tobu-south-gate",
+      "name": { "ja": "南改札口", "en": "South Gate" },
+      "poiId": "tobu-south-gate",
+      "side": "public",
+      "level": "tobu-1f",
+      "position": null,
+      "source": "tobu-tj-guide"
+    },
+    {
+      "id": "tobu-jr-transfer-gate",
+      "name": { "ja": "JR線のりかえ改札口", "en": "JR Line Transfer Gate" },
+      "poiId": "tobu-jr-transfer-gate",
+      "side": "paid",
+      "level": "b1",
+      "position": null,
+      "entryArea": "jr-paid",
+      "source": "tobu-map"
+    },
+    {
+      "id": "tobu-tj-liner-gate-b1",
+      "name": { "ja": "TJライナー改札口", "en": "TJ Liner Checkpoint" },
+      "poiId": null,
+      "side": "paid",
+      "level": "b1",
+      "position": null,
+      "control": "seat-reservation",
+      "source": "tobu-tj-guide"
+    },
+    {
+      "id": "tobu-tj-liner-gate-1f",
+      "name": { "ja": "TJライナー改札口", "en": "TJ Liner Checkpoint" },
+      "poiId": null,
+      "side": "paid",
+      "level": "tobu-1f",
+      "position": null,
+      "control": "seat-reservation",
+      "source": "tobu-tj-guide"
+    }
+  ],
+  "platforms": [
+    {
+      "id": "tobu-tj-platform-1", "number": 1, "track": "tobu-track-1", "level": "tobu-1f",
+      "services": ["Tobu Tojo Line", "Kawagoe-bound departures"],
+      "servicesSources": ["tobu-station", "tobu-kawagoe-pass"],
+      "centerline": [[-42, 18], [14, 210]], "width_m": 4, "length_m": 200,
+      "geometryStatus": "representative", "source": "tobu-tj-guide"
+    },
+    {
+      "id": "tobu-tj-platform-2", "number": 2, "track": "tobu-track-2-3", "level": "tobu-1f",
+      "services": ["Tobu Tojo Line", "Kawagoe-bound departures"],
+      "servicesSources": ["tobu-station", "tobu-kawagoe-pass"],
+      "centerline": [[-46, 18], [10, 210]], "width_m": 4, "length_m": 200,
+      "geometryStatus": "representative", "source": "tobu-tj-guide"
+    },
+    {
+      "id": "tobu-tj-platform-3", "number": 3, "track": "tobu-track-2-3", "level": "tobu-1f",
+      "services": ["Tobu Tojo Line"],
+      "servicesSources": ["tobu-station"],
+      "centerline": [[-54, 18], [2, 210]], "width_m": 4, "length_m": 200,
+      "geometryStatus": "representative", "source": "tobu-tj-guide"
+    },
+    {
+      "id": "tobu-tj-platform-4", "number": 4, "track": "tobu-track-4-5", "level": "tobu-1f",
+      "services": ["Tobu Tojo Line"],
+      "servicesSources": ["tobu-station"],
+      "centerline": [[-58, 18], [-2, 210]], "width_m": 4, "length_m": 200,
+      "geometryStatus": "representative", "source": "tobu-tj-guide"
+    },
+    {
+      "id": "tobu-tj-platform-5", "number": 5, "track": "tobu-track-4-5", "level": "tobu-1f",
+      "services": ["Tobu Tojo Line alighting", "TJ Liner boarding (seat reservation)"],
+      "servicesSources": ["tobu-history", "tobu-tj-tickets"],
+      "centerline": [[-66, 18], [-10, 210]], "width_m": 4, "length_m": 200,
+      "geometryStatus": "representative", "source": "tobu-tj-guide"
+    }
+  ],
+  "paidLandings": [
+    { "id": "tobu-b1-central-1-paid", "level": "b1" },
+    { "id": "tobu-b1-central-2-north-paid", "level": "b1" },
+    { "id": "tobu-b1-liner-paid", "level": "b1" },
+    { "id": "tobu-1f-terminal-head", "level": "tobu-1f" },
+    { "id": "tobu-1f-platforms-1-2", "level": "tobu-1f" },
+    { "id": "tobu-1f-platforms-3-4", "level": "tobu-1f" }
+  ],
+  "connectors": [
+    { "from": "tobu-central-gate-1", "to": "tobu-b1-central-1-paid", "kind": "gate", "source": "tobu-map" },
+    { "from": "tobu-central-gate-2", "to": "tobu-b1-central-2-north-paid", "kind": "gate", "source": "tobu-tj-guide" },
+    { "from": "tobu-north-gate", "to": "tobu-b1-central-2-north-paid", "kind": "gate", "source": "tobu-tj-guide" },
+    { "from": "tobu-south-gate", "to": "tobu-1f-terminal-head", "kind": "gate", "source": "tobu-tj-guide" },
+    { "from": "tobu-jr-transfer-gate", "to": "tobu-b1-central-1-paid", "kind": "gate", "source": "tobu-map", "status": "representative", "scope": "tobu-side-only" },
+    { "from": "tobu-b1-central-1-paid", "to": "tobu-1f-platforms-1-2", "kind": "stairs", "source": "tobu-tj-guide" },
+    { "from": "tobu-b1-central-1-paid", "to": "tobu-1f-platforms-3-4", "kind": "stairs", "source": "tobu-tj-guide" },
+    { "from": "tobu-b1-central-1-paid", "to": "tobu-tj-platform-5", "kind": "stairs", "source": "tobu-tj-guide", "availability": "ordinary access, subject to liner controls" },
+    { "from": "tobu-b1-central-1-paid", "to": "tobu-1f-platforms-1-2", "kind": "lift", "source": "tobu-tj-guide" },
+    { "from": "tobu-b1-central-1-paid", "to": "tobu-1f-platforms-3-4", "kind": "lift", "source": "tobu-tj-guide" },
+    { "from": "tobu-b1-central-1-paid", "to": "tobu-tj-platform-5", "kind": "lift", "source": "tobu-tj-guide", "availability": "ordinary access, subject to liner controls" },
+    { "from": "tobu-b1-central-2-north-paid", "to": "tobu-1f-platforms-1-2", "kind": "stairs", "source": "tobu-tj-guide" },
+    { "from": "tobu-b1-central-2-north-paid", "to": "tobu-1f-platforms-3-4", "kind": "stairs", "source": "tobu-tj-guide" },
+    { "from": "tobu-b1-central-2-north-paid", "to": "tobu-tj-platform-5", "kind": "stairs", "source": "tobu-tj-guide", "availability": "ordinary access, subject to liner controls" },
+    { "from": "tobu-b1-central-2-north-paid", "to": "tobu-tj-liner-gate-b1", "kind": "walk", "source": "tobu-tj-guide" },
+    { "from": "tobu-tj-liner-gate-b1", "to": "tobu-b1-liner-paid", "kind": "gate", "source": "tobu-tj-guide" },
+    { "from": "tobu-b1-liner-paid", "to": "tobu-tj-platform-5", "kind": "stairs", "source": "tobu-tj-guide", "availability": "reserved TJ Liner boarding" },
+    { "from": "tobu-1f-terminal-head", "to": "tobu-1f-platforms-1-2", "kind": "walk", "source": "tobu-tj-guide" },
+    { "from": "tobu-1f-terminal-head", "to": "tobu-1f-platforms-3-4", "kind": "walk", "source": "tobu-tj-guide" },
+    { "from": "tobu-1f-terminal-head", "to": "tobu-tj-platform-5", "kind": "walk", "source": "tobu-tj-guide", "availability": "ordinary access, subject to liner controls" },
+    { "from": "tobu-1f-terminal-head", "to": "tobu-tj-liner-gate-1f", "kind": "walk", "source": "tobu-tj-guide" },
+    { "from": "tobu-tj-liner-gate-1f", "to": "tobu-tj-platform-5", "kind": "gate", "source": "tobu-tj-guide", "availability": "reserved TJ Liner boarding" },
+    { "from": "tobu-1f-platforms-1-2", "to": "tobu-tj-platform-1", "kind": "walk", "source": "tobu-tj-guide" },
+    { "from": "tobu-1f-platforms-1-2", "to": "tobu-tj-platform-2", "kind": "walk", "source": "tobu-tj-guide" },
+    { "from": "tobu-1f-platforms-3-4", "to": "tobu-tj-platform-3", "kind": "walk", "source": "tobu-tj-guide" },
+    { "from": "tobu-1f-platforms-3-4", "to": "tobu-tj-platform-4", "kind": "walk", "source": "tobu-tj-guide" }
+  ],
+  "unplacedFacilities": [
+    { "kind": "escalator", "poiId": "tobu-tj-escalator-1", "source": "tobu-station" }
+  ],
+  "sources": [
+    { "id": "tobu-station", "url": "https://www.tobu.co.jp/railway/guide/station/info/7105.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-35" },
+    { "id": "tobu-map", "url": "https://www.tobu.co.jp/en/service/station/insidemap/7105.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-35" },
+    { "id": "tobu-tj-guide", "url": "https://www.tobu.co.jp/railway/tj/tj_station/", "read_date": "2026-11-26 JST", "terms_ref": "OD-35", "detail": "Outbound boarding diagram, B1 and 1F" },
+    { "id": "tobu-tj-tickets", "url": "https://www.tobu.co.jp/railway/tj/purchase/", "read_date": "2026-11-26 JST", "terms_ref": "OD-35" },
+    { "id": "tobu-kawagoe-pass", "url": "https://www.tobu.co.jp/en/sightseeing/information/pdf/kawagoeDiscountpass.pdf?202510=&version=en", "read_date": "2026-11-26 JST", "terms_ref": "OD-35" },
+    { "id": "tobu-history", "url": "https://www.tobu.co.jp/pdf/corporation/125th/for_printing.pdf?20250326=", "read_date": "2026-11-26 JST", "terms_ref": "OD-35", "detail": "Platform 5 alighting role and the addition of TJ Liner boarding" },
+    { "id": "tobu-terms", "url": "https://www.tobu.co.jp/sitepolicy/", "read_date": "2026-11-26 JST", "terms_ref": "OD-35", "detail": "§§7–8, S-tier facts only, recheck-at-C" },
+    { "id": "toshima-accessibility", "url": "https://www.city.toshima.lg.jp/303/machizukuri/toshikekaku/shisaku/021391/documents/kihonnkousou.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "detail": "p. 19, platform and public gate floors, step-free South Gate" },
+    { "id": "ikebukuro-public-graph", "path": "stations/ikebukuro/data/graph.src.json", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "detail": "Central Gate 2 POI tie to c_w from Toshima facts; public node coordinates resolve through the baseline PLATEAU graph and its existing attribution" },
+    { "id": "tobu-map-ja", "url": "https://www.tobu.co.jp/railway/guide/station/insidemap/7105/", "read_date": "2026-11-26 JST", "terms_ref": "OD-35", "detail": "GAP, JS-only map shell" },
+    { "id": "ecomo-transfer", "url": "https://www.ecomo.or.jp/barrierfree/transfer/ikebukuro/", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN", "detail": "Excluded as an evidence basis per the repository's 2026-10-26 JST segment receipt" }
+  ],
+  "gaps": [
+    "No lawful dimensions, elevations of Tobu surfaces, or station-frame coordinates of the paid landings, platform edges, rails or gate openings were found. Level elevations and platform geometry are preview values. The public c_w anchor is a passage point only.",
+    "The surveyed JR–Tobu passage remains fenced. A named paid-to-paid gate establishes transfer identity; its exact opening, JR landing and fence tie are unresolved.",
+    "Tobu lists escalators at the station. The paid platform escalator endpoints and directions remain unconfirmed.",
+    "An exhaustive current service-by-face roster for 1–4 and the timing and accessibility of platform 5 seat-check operations remain open.",
+    "The Japanese inside-map URL returned a JS-only shell. The public English map supplies gate and floor facts. The linked ticket account is login-gated and was skipped."
+  ]
+}
